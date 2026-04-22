@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpamGuard Mail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables - Premium Light Theme */
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --text-main: #111827;
+            --text-secondary: #4b5563;
+            --text-tertiary: #9ca3af;
+            --success-bg: #ecfdf5;
+            --success-border: #a7f3d0;
+            --success-text: #059669;
+            --danger-bg: #fef2f2;
+            --danger-border: #fecaca;
+            --danger-text: #dc2626;
+            --border-light: #f3f4f6;
+            --border-default: #e5e7eb;
+            --bg-body: #f9fafb;
+            --bg-panel: #ffffff;
+            --bg-hover: #f3f4f6;
+            --bg-active: #e5e7eb;
+            
+            /* Shadows for Depth */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+            --shadow-glow: 0 0 15px rgba(37, 99, 235, 0.15);
+            
+            /* Animations */
+            --transition-fast: 0.15s ease-in-out;
+            --transition-def: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Dark Theme overrides via .dark-mode class on body */
+        body.dark-mode {
+            --primary-light: rgba(37, 99, 235, 0.15);
+            --text-main: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-tertiary: #6b7280;
+            --success-bg: rgba(5, 150, 105, 0.1);
+            --success-border: rgba(16, 185, 129, 0.2);
+            --success-text: #10b981;
+            --danger-bg: rgba(220, 38, 38, 0.1);
+            --danger-border: rgba(239, 68, 68, 0.2);
+            --danger-text: #ef4444;
+            --border-light: #374151;
+            --border-default: #4b5563;
+            --bg-body: #111827;
+            --bg-panel: #1f2937;
+            --bg-hover: #374151;
+            --bg-active: #4b5563;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            overflow: hidden;
+            transition: background-color var(--transition-def), color var(--transition-def);
+        }
+
+        /* Improved Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-default);
+            border-radius: 4px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--text-secondary);
+        }
+
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .list-pane {
+            width: 420px;
+            min-width: 320px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-default);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+            transition: background-color var(--transition-def), border-color var(--transition-def);
+        }
+
+        .content-pane {
+            flex: 1;
+            background: var(--bg-body);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+            transition: background-color var(--transition-def);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Header (List Pane) */
+        .list-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-panel);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+        }
+
+        .list-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text-main);
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-hover);
+            color: var(--text-main);
+            transform: scale(1.05);
+        }
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        /* Email List */
+        .email-list-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .email-item {
+            padding: 1.125rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all var(--transition-def);
+            background: var(--bg-panel);
+            display: flex;
+            gap: 1rem;
+            position: relative;
+            animation: fadeIn 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        /* Read/Unread styling */
+        .email-item.unread .email-sender {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .email-item.unread .email-subject {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+        /* Indicator dot */
+        .email-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary);
+            border-radius: 50%;
+        }
+
+        .email-item:hover {
+            background: var(--bg-hover);
+            transform: translateX(4px);
+        }
+
+        .email-item.selected {
+            background: var(--primary-light);
+            box-shadow: inset 4px 0 0 var(--primary);
+            border-bottom-color: transparent;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .email-content-preview {
+            flex: 1;
+            min-width: 0; /* Important for truncation */
+        }
+
+        .email-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .email-sender {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 0.5rem;
+        }
+
+        .email-time {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+        }
+
+        .email-subject {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-preview-text {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+        }
+
+        /* Analyzer Panel (Right) */
+        .glass-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-default);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+            transition: all var(--transition-def);
+            position: relative;
+            overflow: hidden;
+            animation: slideInUp 0.5s ease forwards;
+        }
+        
+        .glass-card.analyzing {
+            border-color: rgba(37, 99, 235, 0.4);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .threat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--border-default);
+            background: var(--bg-hover);
+            transition: all var(--transition-def);
+        }
+
+        .threat-badge.spam {
+            background: var(--danger-bg);
+            border-color: var(--danger-border);
+            color: var(--danger-text);
+        }
+        .threat-badge.safe {
+            background: var(--success-bg);
+            border-color: var(--success-border);
+            color: var(--success-text);
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            padding: 1.25rem;
+            background: var(--bg-body);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+            transition: all var(--transition-fast);
+            font-family: 'Inter', sans-serif;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+            position: relative;
+            z-index: 2;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            background: var(--bg-panel);
+        }
+
+        textarea:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Overlay Spinner */
+        .spinner-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-def);
+            border-radius: 12px;
+        }
+        body.dark-mode .spinner-overlay {
+            background: rgba(31, 41, 55, 0.7);
+        }
+        textarea.loading + .spinner-overlay {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-default);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 1.5rem;
+        }
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-default);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--success-text);
+            border-radius: 8px;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.5s ease;
+        }
+
+        /* Metrics Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            animation: slideInUp 0.6s ease forwards;
+            opacity: 0;
+            animation-delay: 0.1s;
+        }
+
+        .metric-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-default);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-def);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-light);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            line-height: 1;
+            transition: color var(--transition-def);
+        }
+
+        .metric-value span {
+            font-size: 1rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .val-danger { color: var(--danger-text) !important; }
+        .val-safe { color: var(--success-text) !important; }
+
+        /* Skeleton Loading */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-light) 50%, var(--bg-hover) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-radius: 4px;
+        }
+        .skel-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;}
+        .skel-text { height: 12px; margin-bottom: 8px; }
+        .skel-text.w-40 { width: 40%; }
+        .skel-text.w-80 { width: 80%; }
+        .skel-text.w-full { width: 100%; }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 3rem;
+            text-align: center;
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.05);
+        }
+        body.dark-mode .empty-icon {
+            box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.1);
+        }
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+        .empty-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 250px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 5px; height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.3);
+        }
+        .btn:active {
+            transform: translateY(1px);
+        }
+        .btn:active::after {
+            animation: ripple 0.4s ease-out;
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(0, 0); opacity: 0.5; }
+            100% { transform: scale(40, 40); opacity: 0; }
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .toast {
+            background: var(--text-main);
+            color: var(--bg-body);
+            padding: 0.875rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 900px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .list-pane {
+                width: 100%;
+                height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border-default);
+            }
+            .content-pane {
+                padding: 1.5rem;
+                height: 60vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Left Pane: Email List -->
+        <aside class="list-pane">
+            <div class="list-header">
+                <div class="brand-container">
+                    <div class="brand-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <h2>SpamGuard</h2>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <a href="/logout" id="logout-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; font-weight: 500; border-radius: 8px; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-default); text-decoration: none; transition: all 0.2s; display: flex; align-items: center;" onmouseover="this.style.background='var(--bg-hover)'; this.style.color='var(--text-main)';" onmouseout="this.style.background='transparent'; this.style.color='var(--text-secondary)';">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Logout
+                    </a>
+                    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+                        <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="email-list-wrapper" id="email-list">
+                <!-- Skeletons, empty state, or emails injected here -->
+            </div>
+        </aside>
+
+        <!-- Right Pane: Dashboard -->
+        <main class="content-pane" id="analyzer-panel">
+            <div class="glass-card" id="analyzer-card">
+                <div class="section-header">
+                    <h2>Live Analysis</h2>
+                    <div id="threat-badge" class="threat-badge">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <span id="threat-text">Ready</span>
+                    </div>
+                </div>
+
+                <div style="position: relative;">
+                    <textarea id="email-input" placeholder="Select an email from the left, or type/paste raw content here..."></textarea>
+                    <div class="spinner-overlay">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span>Threat Level</span>
+                        <span id="threat-percent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-grid">
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Spam Probability
+                    </div>
+                    <div class="metric-value" id="spam-score">0.0<span>%</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Safe Probability
+                    </div>
+                    <div class="metric-value" id="safe-score">0.0<span>%</span></div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                        Word Count
+                    </div>
+                    <div class="metric-value" id="word-count">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        Char Count
+                    </div>
+                    <div class="metric-value" id="char-count">0</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications Context -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // DOM Elements
+        const emailListContainer = document.getElementById('email-list');
+        const textarea = document.getElementById('email-input');
+        const analyzerCard = document.getElementById('analyzer-card');
+
+        // Metrics UI
+        const spamScoreEl = document.getElementById('spam-score');
+        const safeScoreEl = document.getElementById('safe-score');
+        const wordCountEl = document.getElementById('word-count');
+        const charCountEl = document.getElementById('char-count');
+        
+        // Status & Progress UI
+        const threatBadge = document.getElementById('threat-badge');
+        const threatText = document.getElementById('threat-text');
+        const progressBar = document.getElementById('progress-bar');
+        const threatPercent = document.getElementById('threat-percent');
+        
+        // Theme
+        const themeBtn = document.getElementById('theme-btn');
+        const themeIcon = document.getElementById('theme-icon');
+
+        let allEmails = [];
+        let analysisTimeout = null;
+
+        // --- Theme Management ---
+        const initTheme = () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                setThemeIcon('light');
+            } else {
+                setThemeIcon('dark');
+            }
+        };
+
+        const setThemeIcon = (mode) => {
+            if (mode === 'light') {
+                // Sun Icon
+                themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+            } else {
+                // Moon Icon
+                themeIcon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+            }
+        }
+
+        const toggleTheme = () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                setThemeIcon('light');
+            } else {
+                localStorage.setItem('theme', 'light');
+                setThemeIcon('dark');
+            }
+        };
+        initTheme();
+
+        // --- Toasts ---
+        const showToast = (msg, icon = '✓') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+            });
+
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            setTimeout(() => { container.removeChild(toast); }, 3500);
+        };
+
+        // --- Utility to visually distinguish avatars ---
+        const getAvatarColor = (name) => {
+            const colors = ['#f87171', '#fb923c', '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#a78bfa', '#f472b6'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        };
+        const getInitials = (name) => {
+            const parts = name.split(' ').filter(n => n);
+            if (parts.length === 0) return '?';
+            if (parts.length === 1) return parts[0][0];
+            return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+        };
+
+        // --- Loading UI ---
+        const renderSkeletons = () => {
+            emailListContainer.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                emailListContainer.innerHTML += `
+                    <div class="email-item" style="animation-delay: ${i * 0.05}s">
+                        <div class="skeleton skel-avatar"></div>
+                        <div class="email-content-preview">
+                            <div class="skeleton skel-text w-40"></div>
+                            <div class="skeleton skel-text w-80"></div>
+                            <div class="skeleton skel-text w-full"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        const showConnectUI = (isError = false) => {
+            let title = 'Inbox Empty';
+            let sub = 'No emails found in your inbox.';
+            let btnHtml = '';
+
+            if (isError) {
+                title = 'Connection Error';
+                sub = 'Could not reach the server to fetch your emails.';
+            }
+
+            emailListContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </div>
+                    <div class="empty-title">${title}</div>
+                    <div class="empty-subtitle">${sub}</div>
+                </div>`;
+        };
+
+        // --- Data Fetching ---
+        async function fetchEmails() {
+            renderSkeletons();
+            try {
+                const res = await fetch('/api/emails');
+                
+                if (res.status === 401) {
+                    window.location.href = '/logout';
+                    return;
+                }
+
+                const data = await res.json();
+                
+                if (data.error === "Not authenticated") {
+                    window.location.href = '/logout';
+                    return;
+                }
+
+                allEmails = data.emails || [];
+
+                if (allEmails.length === 0) {
+                    showConnectUI(false);
+                } else {
+                    renderEmailList();
+                    // Load first email naturally via click event
+                    if (allEmails.length > 0) {
+                        const firstItem = document.querySelector('.email-item');
+                        if(firstItem) {
+                            firstItem.click();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Fetch error:", e);
+                showConnectUI(true);
+            }
+        }
+
+        // --- Rendering ---
+        function renderEmailList() {
+            emailListContainer.innerHTML = '';
+            allEmails.forEach((email, index) => {
+                const senderName = email.sender || 'Unknown';
+                const initial = getInitials(senderName);
+                const bgColor = getAvatarColor(senderName);
+                
+                const el = document.createElement('div');
+                // Simulate "unread" state for the first 3 randomly for visual richness if desired, 
+                // but by default mark all as unread until clicked.
+                el.className = 'email-item unread';
+                el.style.animationDelay = `${index * 0.05}s`;
+
+                el.innerHTML = `
+                    <div class="avatar" style="background-color: ${bgColor}">${initial}</div>
+                    <div class="email-content-preview">
+                        <div class="email-meta">
+                            <span class="email-sender">${senderName}</span>
+                            <span class="email-time">${email.time || '12:00 PM'}</span>
+                        </div>
+                        <div class="email-subject">${email.subject || 'No Subject'}</div>
+                        <div class="email-preview-text">${email.preview || email.body || 'No preview available...'}</div>
+                    </div>
+                `;
+                el.onclick = async () => {
+                    document.querySelectorAll('.email-item').forEach(i => i.classList.remove('selected'));
+                    el.classList.add('selected');
+                    el.classList.remove('unread');
+                    
+                    // Show loader early while fetching payload
+                    textarea.classList.add('loading');
+                    textarea.disabled = true;
+                    analyzerCard.classList.add('analyzing');
+                    
+                    try {
+                        const res = await fetch(`/api/email/${email.id}`);
+                        const fullEmail = await res.json();
+                        
+                        // Update in memory list
+                        Object.assign(email, fullEmail);
+                        
+                        // Dynamically update UI
+                        const updatedSender = email.sender || 'Unknown';
+                        el.querySelector('.avatar').innerText = getInitials(updatedSender);
+                        el.querySelector('.avatar').style.backgroundColor = getAvatarColor(updatedSender);
+                        el.querySelector('.email-sender').innerText = updatedSender;
+                        el.querySelector('.email-subject').innerText = email.subject || 'No Subject';
+                        el.querySelector('.email-time').innerText = email.time || '12:00 PM';
+                        
+                        loadEmailAnalysis(email.body || email.preview || '');
+                    } catch(err) {
+                        console.error('Failed to load full email', err);
+                        loadEmailAnalysis(email.preview || '');
+                    }
+                };
+                emailListContainer.appendChild(el);
+            });
+        }
+
+        function loadEmailAnalysis(bodyText) {
+            textarea.value = bodyText;
+            triggerAnalysis(bodyText);
+        }
+
+        textarea.addEventListener('input', () => {
+            document.querySelectorAll('.email-item').forEach(i => i.classList.remove('selected'));
+            triggerAnalysis(textarea.value);
+        });
+
+        // --- Analysis Logic ---
+        function triggerAnalysis(text) {
+            if (text.trim() === '') {
+                resetUI();
+                return;
+            }
+
+            // Set loading state
+            textarea.classList.add('loading');
+            textarea.disabled = true;
+            analyzerCard.classList.add('analyzing');
+            
+            threatBadge.className = 'threat-badge';
+            threatBadge.innerHTML = `<svg class="spinner" style="width:14px;height:14px;border-width:2px;border-top-color:var(--text-main)" viewBox="0 0 24 24"></svg><span>Analyzing...</span>`;
+            
+            clearTimeout(analysisTimeout);
+            analysisTimeout = setTimeout(() => executeAnalysis(text), 400); // slight delay for smooth UX
+        }
+
+        function resetUI() {
+            analyzerCard.classList.remove('analyzing');
+            textarea.classList.remove('loading');
+            textarea.disabled = false;
+            
+            spamScoreEl.innerHTML = `0.0<span>%</span>`;
+            spamScoreEl.className = 'metric-value';
+            safeScoreEl.innerHTML = `0.0<span>%</span>`;
+            safeScoreEl.className = 'metric-value';
+            wordCountEl.innerText = '0';
+            charCountEl.innerText = '0';
+
+            threatBadge.className = 'threat-badge';
+            threatBadge.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span>Ready</span>`;
+            
+            progressBar.style.width = '0%';
+            progressBar.style.backgroundColor = 'var(--text-tertiary)';
+            threatPercent.innerText = '0%';
+        }
+
+        async function executeAnalysis(text) {
+            try {
+                // Hit the local API
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await response.json();
+
+                textarea.classList.remove('loading');
+                textarea.disabled = false;
+                analyzerCard.classList.remove('analyzing');
+
+                if (data.error) throw new Error(data.error);
+
+                // Update metrics
+                charCountEl.innerText = data.text_length;
+                wordCountEl.innerText = data.word_count;
+
+                const spamP = (data.spam_probability * 100).toFixed(1);
+                const safeP = (data.safe_probability * 100).toFixed(1);
+
+                spamScoreEl.innerHTML = `${spamP}<span>%</span>`;
+                safeScoreEl.innerHTML = `${safeP}<span>%</span>`;
+
+                // Progress Bar Update
+                progressBar.style.width = `${spamP}%`;
+                threatPercent.innerText = `${Math.round(spamP)}%`;
+
+                // Status updates
+                if (data.prediction === 1) { // SPAM
+                    spamScoreEl.className = 'metric-value val-danger';
+                    safeScoreEl.className = 'metric-value';
+                    progressBar.style.backgroundColor = 'var(--danger-text)';
+
+                    threatBadge.className = 'threat-badge spam';
+                    threatBadge.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span>SPAM DETECTED</span>`;
+                    
+                    showToast("Warning: High Spam Probability", "⚠️");
+                } else { // SAFE
+                    spamScoreEl.className = 'metric-value';
+                    safeScoreEl.className = 'metric-value val-safe';
+                    progressBar.style.backgroundColor = 'var(--success-text)';
+
+                    threatBadge.className = 'threat-badge safe';
+                    threatBadge.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><span>SAFE CONTENT</span>`;
+                }
+
+            } catch (err) {
+                console.error('Analysis failed:', err);
+                textarea.classList.remove('loading');
+                textarea.disabled = false;
+                analyzerCard.classList.remove('analyzing');
+                
+                threatBadge.className = 'threat-badge spam';
+                threatBadge.innerHTML = `<span>❌ Analysis Error</span>`;
+                showToast("Failed to analyze content.", "❌");
+            }
+        }
+
+        // Initialize Data
+        fetchEmails();
+
+    </script>
+</body>
+</html>

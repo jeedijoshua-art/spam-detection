@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpamGuard Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --text-main: #111827;
+            --text-secondary: #4b5563;
+            --border-default: #e5e7eb;
+            --bg-body: #f5f7fb;
+            --bg-panel: rgba(255, 255, 255, 0.85);
+            --bg-hover: #f3f4f6;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.08);
+            --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.2);
+        }
+
+        body.dark-mode {
+            --primary-light: rgba(37, 99, 235, 0.15);
+            --text-main: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-default: rgba(75, 85, 99, 0.4);
+            --bg-body: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --bg-hover: #374151;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1), color 0.6s ease;
+        }
+
+        /* 2. BACKGROUND ANIMATION */
+        .ambient-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0) 60%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease, background 0.6s ease;
+            animation: pulseBackground 8s ease-in-out infinite alternate;
+        }
+        
+        body.dark-mode .ambient-glow {
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(15, 23, 42, 0) 60%);
+        }
+
+        @keyframes pulseBackground {
+            0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.7; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+
+        /* 8. THEME TOGGLE ANIMATION */
+        .theme-toggle {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .theme-toggle svg {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1) translateY(-2px);
+            color: var(--text-main);
+            background: var(--bg-hover);
+        }
+        
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+        
+        .theme-toggle:active svg {
+            transform: rotate(-15deg);
+        }
+
+        /* 1. PAGE LOAD ANIMATION - Outer Wrapper */
+        .login-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 440px;
+            animation: formEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes formEntry {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 3. FLOATING CARD EFFECT - Inner Container */
+        .login-container {
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 3.5rem 2.5rem;
+            border-radius: 24px;
+            border: 1px solid var(--border-default);
+            box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            text-align: center;
+            transition: background 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
+            animation: cardFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* 7. ICON ANIMATION */
+        .logo-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            animation: iconBounce 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1) translateY(0); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); }
+            50% { transform: scale(1.05) translateY(-5px); box-shadow: 0 15px 35px rgba(37, 99, 235, 0.4); }
+        }
+
+        /* 6. TEXT ANIMATION */
+        .title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            opacity: 0;
+            animation: titleReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+            transition: color 0.6s ease;
+        }
+
+        @keyframes titleReveal {
+            0% { opacity: 0; letter-spacing: -0.15em; transform: translateY(10px); }
+            100% { opacity: 1; letter-spacing: -0.03em; transform: translateY(0); }
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+            padding: 0 1rem;
+            opacity: 0;
+            animation: subtitleReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+            transition: color 0.6s ease;
+        }
+
+        @keyframes subtitleReveal {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 4. BUTTON HOVER EFFECT & 5. BUTTON CLICK EFFECT */
+        .btn-google {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, var(--primary), #3b82f6);
+            color: #ffffff;
+            padding: 1.15rem 1.75rem;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-decoration: none;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            z-index: 1;
+        }
+
+        .btn-google::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #1d4ed8, var(--primary));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            pointer-events: none; /* Let events fall to button */
+        }
+
+        .btn-google:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4), 0 0 15px rgba(37, 99, 235, 0.4);
+        }
+        
+        .btn-google:hover::before {
+            opacity: 1;
+        }
+
+        .btn-google:active {
+            transform: translateY(1px) scale(0.95);
+        }
+
+        /* JS Ripple Effect Class */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-anim 0.6s ease-out;
+            background-color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.75rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            opacity: 0;
+            animation: subtitleReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+            transition: color 0.6s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Subtle Radial Glow Background -->
+    <div class="ambient-glow"></div>
+
+    <!-- Theme Toggle positioned absolute Top Right -->
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <svg id="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+    </button>
+
+    <!-- Outer Wrapper for Entry Animation -->
+    <div class="login-wrapper">
+        <!-- Glassmorphic Login Card Base - Handles the float -->
+        <div class="login-container">
+            
+            <!-- Guard Icon with Bounce Animation -->
+            <div class="logo-icon">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M12 8v4"/>
+                    <path d="M12 16h.01"/>
+                </svg>
+            </div>
+            
+            <h1 class="title">SpamGuard</h1>
+            <p class="subtitle">AI-Powered Email Spam Detection.<br/>Connect securely to guard your inbox.</p>
+
+            <!-- OAuth Link Button -->
+            <a href="/login" style="text-decoration: none; display: block;">
+                <button type="button" class="btn-google" id="connect-btn">
+                    <span class="btn-content">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        Connect Gmail
+                    </span>
+                </button>
+            </a>
+
+            <!-- Bottom Security Trust Indicator -->
+            <div class="secure-badge">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Secure 256-bit OAuth Encryption
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripting for Seamless Theme Transitions and Interactions -->
+    <script>
+        const themeIcon = document.getElementById('theme-icon');
+
+        const setThemeIcon = (mode) => {
+            if (mode === 'light') {
+                themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+            } else {
+                themeIcon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+            }
+        };
+
+        const initTheme = () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                setThemeIcon('light');
+            } else {
+                setThemeIcon('dark');
+            }
+        };
+
+        const toggleTheme = () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                setThemeIcon('light');
+            } else {
+                localStorage.setItem('theme', 'light');
+                setThemeIcon('dark');
+            }
+        };
+
+        
+        initTheme();
+
+        
+        const connectBtn = document.getElementById('connect-btn');
+        connectBtn.addEventListener('click', function(e) {
+            const btn = e.currentTarget;
+            
+            const circle = document.createElement('span');
+            const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+            const radius = diameter / 2;
+            
+            circle.style.width = circle.style.height = `${diameter}px`;
+            
+            
+            const rect = btn.getBoundingClientRect();
+            circle.style.left = `${e.clientX - rect.left - radius}px`;
+            circle.style.top = `${e.clientY - rect.top - radius}px`;
+            
+            circle.classList.add('ripple');
+            
+            const existingRipple = btn.querySelector('.ripple');
+            if (existingRipple) {
+                existingRipple.remove();
+            }
+            
+            btn.appendChild(circle);
+        });
+    </script>
+</body>
+</html>
