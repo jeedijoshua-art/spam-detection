@@ -13,7 +13,11 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 # Gmail config
-GOOGLE_CLIENT_CONFIG = json.loads(os.environ["GOOGLE_CLIENT_SECRET"])
+try:
+    GOOGLE_CLIENT_CONFIG = json.loads(os.environ.get("GOOGLE_CLIENT_SECRET", "{}"))
+except Exception as e:
+    print("ERROR LOADING GOOGLE CLIENT SECRET:", e)
+    GOOGLE_CLIENT_CONFIG = {}
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 
@@ -110,6 +114,9 @@ def analyze():
 @app.route("/login")
 def login():
     """Initiates the OAuth2 flow by redirecting to Google."""
+    if not GOOGLE_CLIENT_CONFIG or "web" not in GOOGLE_CLIENT_CONFIG:
+        return "Google OAuth not configured properly", 500
+
     # Ensure fresh execution by not reusing previous state or credentials
     session.pop('credentials', None)
     session.pop('state', None)
@@ -135,6 +142,9 @@ def login():
 @app.route("/callback")
 def callback():
     """Handles the callback from Google, completing the OAuth flow."""
+    if not GOOGLE_CLIENT_CONFIG or "web" not in GOOGLE_CLIENT_CONFIG:
+        return "Google OAuth not configured properly", 500
+
     flow = Flow.from_client_config(
         GOOGLE_CLIENT_CONFIG,
         scopes=SCOPES,
