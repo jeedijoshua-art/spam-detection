@@ -1,4 +1,5 @@
 import os
+import json
 import base64
 import google.oauth2.credentials
 from flask import Flask, render_template, request, jsonify, redirect, session
@@ -11,11 +12,8 @@ app = Flask(__name__)
 # Generate a random secret key so sessions are invalidated on server restart
 app.secret_key = os.urandom(24)
 
-# Allow HTTP (for local testing)
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
 # Gmail config
-CLIENT_SECRETS_FILE = os.environ.get("GOOGLE_CLIENT_SECRETS", "client_secret.json")
+GOOGLE_CLIENT_CONFIG = json.loads(os.environ["GOOGLE_CLIENT_SECRET"])
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 
@@ -116,10 +114,10 @@ def login():
     session.pop('credentials', None)
     session.pop('state', None)
 
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
+    flow = Flow.from_client_config(
+        GOOGLE_CLIENT_CONFIG,
         scopes=SCOPES,
-        redirect_uri="http://127.0.0.1:5000/callback"
+        redirect_uri=request.url_root + "callback"
     )
 
     auth_url, state = flow.authorization_url(
@@ -137,11 +135,11 @@ def login():
 @app.route("/callback")
 def callback():
     """Handles the callback from Google, completing the OAuth flow."""
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
+    flow = Flow.from_client_config(
+        GOOGLE_CLIENT_CONFIG,
         scopes=SCOPES,
         state=session['state'],
-        redirect_uri="http://127.0.0.1:5000/callback"
+        redirect_uri=request.url_root + "callback"
     )
 
     flow.code_verifier = session.get('code_verifier')
@@ -266,4 +264,4 @@ def get_single_email(id):
 # ==========================================
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
